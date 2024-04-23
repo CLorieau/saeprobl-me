@@ -7,7 +7,11 @@ use App\Models\User;
 use Illuminate\Http\Request;
 
 use App\Models\FichierFinal;
-use Intervention\Image\Facades\Image; // Assurez-vous d'importer la classe Image de la bonne façon
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Laravel\Facades\Image;
+use Intervention\Image\ImageManager;
+
+// Assurez-vous d'importer la classe Image de la bonne façon
 
 class FichierController extends Controller
 {
@@ -71,25 +75,37 @@ class FichierController extends Controller
 
     public function convertirImagePng(Request $request)
     {
-        // Valider la requête et vérifier si l'image a été envoyée
-        $request->validate([
-            'image' => 'required|image',
-        ]);
+
 
         // Chemin de sauvegarde temporaire de l'image
         $cheminImageTemporaire = $request->file('image')->getPathName();
 
         // Charger l'image avec le modèle FichierInitial
-        $fichierInitial = FichierInitial::make($cheminImageTemporaire);
+        //$fichierInitial = FichierInitial::convertirEnPng($cheminImageTemporaire);
 
         // Chemin de sauvegarde pour l'image convertie
         $cheminImageConvertie = public_path('imgconvertie') . '/image_convertie.png';
 
         // Convertir l'image en format PNG et enregistrer
-        $fichierInitial->convertirEnPng($cheminImageConvertie);
+        //FichierInitial::convertirEnPng($cheminImageConvertie);
+
+        
+        // Assurez-vous que l'image existe avant de la manipuler
+        //if (!file_exists($this->getPath())) {
+          //  return false;
+        //}
+
+        // reading jpg image
+        $image = Image::read($cheminImageTemporaire);
+
+// encoding as png image
+        $image->toPng()->save($cheminImageConvertie); // Intervention\Image\EncodedImage
+
+
+
 
         // Enregistrement dans la base de données
-        $nomFichierFinal = 'image_convertie.png';
+       /* $nomFichierFinal = 'image_convertie.png';
         $poidsFichierFinal = filesize($cheminImageTemporaire); // Obtenir la taille de l'image d'origine
         $extensionFichierFinal = 'png';
 
@@ -99,7 +115,7 @@ class FichierController extends Controller
         $fichierFinal->poids = $poidsFichierFinal;
         $fichierFinal->extension = $extensionFichierFinal;
         $fichierFinal->save();
-
+*/
         // Retourner une réponse ou effectuer d'autres actions nécessaires
         return response()->json(['message' => 'Image convertie en format PNG avec succès et enregistrée dans la base de données', 'chemin_image_convertie' => $cheminImageConvertie]);
     }

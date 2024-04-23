@@ -4,7 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Intervention\Image\Facades\Image;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Laravel\Facades\Image;
+
+
+
 
 class FichierInitial extends Model
 {
@@ -32,16 +37,17 @@ class FichierInitial extends Model
      */
     public function convertirEnPng($cheminDestination)
     {
+        $manager = new ImageManager(Driver::class);
         // Assurez-vous que l'image existe avant de la manipuler
         if (!file_exists($this->getPath())) {
             return false;
         }
 
-        // Charger l'image avec Intervention Image
-        $image = Image::make($this->getPath());
+        // reading jpg image
+        $image = $manager->read('images/example.jpg');
 
-        // Convertir l'image en format PNG et enregistrer
-        $image->encode('png')->save($cheminDestination);
+// encoding as png image
+        $image->toPng()->save($cheminDestination); // Intervention\Image\EncodedImage
 
         return true;
     }
